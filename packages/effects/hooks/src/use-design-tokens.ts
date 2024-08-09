@@ -1,7 +1,7 @@
 import { reactive, watch } from 'vue';
 
 import { preferences } from '@vben/preferences';
-import { updateCSSVariables } from '@vben/utils';
+import { convertToRgb, updateCSSVariables } from '@vben/utils';
 
 /**
  * 用于适配各个框架的设计系统
@@ -36,6 +36,8 @@ export function useAntdDesignTokens() {
     () => {
       tokens.colorPrimary = getCssVariableValue('--primary');
 
+      tokens.colorInfo = getCssVariableValue('--primary');
+
       tokens.colorError = getCssVariableValue('--destructive');
 
       tokens.colorWarning = getCssVariableValue('--warning');
@@ -54,7 +56,9 @@ export function useAntdDesignTokens() {
 
       tokens.colorBgBase = getCssVariableValue('--background');
 
-      tokens.borderRadius = getCssVariableValue('--radius', false);
+      const radius = Number.parseFloat(getCssVariableValue('--radius', false));
+      // 1rem = 16px
+      tokens.borderRadius = radius * 16;
 
       tokens.colorBgLayout = getCssVariableValue('--background-deep');
       tokens.colorBgMask = getCssVariableValue('--overlay');
@@ -102,7 +106,7 @@ export function useNaiveDesignTokens() {
 
   const getCssVariableValue = (variable: string, isColor: boolean = true) => {
     const value = rootStyles.getPropertyValue(variable);
-    return isColor ? `hsl(${value})` : value;
+    return isColor ? convertToRgb(`hsl(${value})`) : value;
   };
 
   watch(
@@ -145,12 +149,9 @@ export function useNaiveDesignTokens() {
       commonTokens.invertedColor = getCssVariableValue('--background-deep');
 
       commonTokens.borderRadius = getCssVariableValue('--radius', false);
-
-      // antDesignTokens.colorBgMask = getCssVariableValue('--overlay');
     },
     { immediate: true },
   );
-
   return {
     commonTokens,
   };
@@ -161,7 +162,7 @@ export function useElementPlusDesignTokens() {
 
   const getCssVariableValue = (variable: string, isColor: boolean = true) => {
     const value = rootStyles.getPropertyValue(variable);
-    return isColor ? `hsl(${value})` : value;
+    return isColor ? convertToRgb(`hsl(${value})`) : value;
   };
   watch(
     () => preferences.theme,
